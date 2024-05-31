@@ -80,8 +80,81 @@ const tableParsing = (content) => {
 };
 
 // task 2
-const candidateAssessment = (/* content */) => {
+const normalizedDataJob = (content) => {
+  const data = content.split('\n');
+  return data.map((item) => item.split(','));
+};
 
+const imjaFomilija = (data) => {
+  const [name, post] = [data[0], data[1]];
+  return [name, post];
+};
+
+const frames = ['React', 'Angular', 'Vue.js', 'JQuery', 'Backbone.js', 'Node.js', 'Ember.js', 'Meteor'];
+
+const framesOwned = (data) => {
+  const framesToLower = frames.map((item) => item.trim().toLowerCase());
+  const framesNospace = data[5].map((item) => item.trim().toLowerCase());
+  const listFrames = framesNospace.filter((item) => framesToLower.includes(item));
+  return listFrames.length;
+};
+
+const gitName = (data) => {
+  const socials = data[4].join(',').split(':')[1].split(',').map((item) => item.trim());
+  const linkName = socials.map((item) => item.split('.')).filter((item) => item[0] === 'github').flat();
+  const name = linkName[1].split('/')[1];
+  return name;
+};
+
+const calculateTime = (data) => {
+  const newInfo = data[6];
+
+  const dateRanges = [];
+  const pattern = /\d{2}\.\d{2}\.\d{4} - \d{2}\.\d{2}\.\d{4}/g;
+
+  newInfo.forEach((line) => {
+    const foundRanges = line.match(pattern);
+    if (foundRanges) {
+      dateRanges.push(...foundRanges);
+    }
+  });
+  const milliseconds = dateRanges.map((info) => {
+    const newData = info.split(' - ');
+    const start = newData[0].split('.').map((number) => Number(number));
+    const end = newData[1].split('.').map((number) => Number(number));
+
+    const startMilisec = Date.parse(new Date(start[2], start[1], start[0]));
+    const endMilisec = Date.parse(new Date(end[2], end[1], end[0]));
+
+    const res = endMilisec - startMilisec;
+
+    return res;
+  }).reduce((acc, num) => num + acc, 0);
+
+  const millisecondsInYear = 365.25 * 24 * 60 * 60 * 1000;
+  const millisecondsInMonth = 30.44 * 24 * 60 * 60 * 1000;
+
+  const years = Math.floor(milliseconds / millisecondsInYear);
+  const remainingMillisecondsAfterYears = milliseconds % millisecondsInYear;
+  const months = Math.floor(remainingMillisecondsAfterYears / millisecondsInMonth);
+
+  return { years, months };
+};
+
+const candidateAssessment = (content) => {
+  const data = normalizedDataJob(content);
+
+  const [name, post] = imjaFomilija(data);
+  console.log(`Job seeker: ${name[0]}, ${post[0]}`);
+
+  const numOfFrames = framesOwned(data);
+  console.log(`Required stack: ${numOfFrames}`);
+
+  const nickName = gitName(data);
+  console.log(`GitHub nickname: ${nickName}`);
+
+  const timeWorked = calculateTime(data);
+  console.log(`Experience: ${timeWorked.years} years ${timeWorked.months} months`);
 };
 
 // task 3
